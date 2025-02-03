@@ -4,18 +4,19 @@ import morgan from "morgan";
 import mongoose from "mongoose";
 import "dotenv/config";
 import authRoutes from "./routers/auth.js";
+import courseRoutes from "./routers/course.js";
 import UserModal from "./models/Users.js";
 
 const app = express();
 
-// Middleware
 app.use(cors());
 app.use(express.json());
 app.use(morgan("dev"));
 app.use("/auth", authRoutes);
+app.use("/course", courseRoutes);
 
-mongoose
-  .connect(process.env.MONGODB_URI)
+
+mongoose.connect(process.env.MONGODB_URI)
   .then(() => console.log("mongodb connected"))
   .catch((err) => console.log(err));
 

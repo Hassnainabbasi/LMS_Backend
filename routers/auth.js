@@ -5,6 +5,9 @@ import userClear from "../models/OnlineUsers.js";
 import AnnouncementModel from "../models/Announcment.js";
 import CommentModel from "../models/Comments.js";
 import ReportsModel from "../models/Report.js";
+import TrainerModel from "../models/Trainer.js";
+import SectionModel from "../models/Section.js";
+import BatchModel from "../models/Batch.js";
 
 const router = express.Router();
 
@@ -25,6 +28,108 @@ router.post("/register", async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 });
+
+router.post("/trainer", async (req, res) => {
+  const { trainerName, trainerEmail, trainerPhone, trainerBio } = req.body;
+  try {
+    const newTrainer = new TrainerModel({ trainerName, trainerEmail, trainerPhone, trainerBio });
+    await newTrainer.save();
+
+    res.status(201).json({ message: "Trainer registered successfully", trainer: newTrainer });
+  } catch (error) {
+    console.error("Error registering user:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+router.post("/trainer", async (req, res) => {
+  const { trainerName, trainerEmail, trainerPhone, trainerBio } = req.body;
+  try {
+    const newTrainer = new TrainerModel({ trainerName, trainerEmail, trainerPhone, trainerBio });
+    await newTrainer.save();
+
+    res.status(201).json({ message: "Trainer registered successfully", trainer: newTrainer });
+  } catch (error) {
+    console.error("Error registering user:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+router.get("/trainer", async (req, res) => {
+  try {
+    const alltrainers = await TrainerModel.find();
+    res.status(201).json({ message: "All Trainer Data", trainer: alltrainers });
+  } catch (error) {
+    console.error("Error registering user:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+router.post("/section", async (req, res) => {
+  const { sectionNo, sectionTiming , course ,trainer, batch, status  } = req.body;
+  try {
+    const newSection = new SectionModel({
+      sectionNo,
+      sectionTiming,
+      course ,
+      trainer,
+      batch,
+      status
+    });
+
+    await newSection.save();
+
+    res.status(201).json({ message: "Section registered successfully", section: newSection });
+  } catch (error) {
+    console.error("Error registering section:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+router.get("/section", async (req, res) => {
+  try {
+    const allbatches = await BatchModel.find() .populate('course')
+    .populate('batch')
+    .populate('trainer');;
+    res.status(200).json({ message: "All batch data", batch: allbatches });
+  } catch (error) {
+    console.error("Error fetching batches:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+router.post("/batch", async (req, res) => {
+  const { batchNo, status , course } = req.body;
+  try {
+    const newBatch = new BatchModel({ 
+      batchNo,
+      status,
+      course
+    });
+
+    if (status === 'end') {
+      newBatch.endDate = new Date();
+    }
+
+    await newBatch.save();
+
+    res.status(201).json({ message: "Batch registered successfully", batch: newBatch });
+  } catch (error) {
+    console.error("Error registering batch:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+router.get("/batch", async (req, res) => {
+  try {
+    const allBatches = await BatchModel.find().populate('course');
+    res.status(200).json({ message: "All batch data", batch: allBatches });
+  } catch (error) {
+    console.error("Error fetching batches:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
   
 router.get("/register", async (req, res) => {
   try {
