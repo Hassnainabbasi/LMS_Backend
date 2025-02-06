@@ -8,7 +8,7 @@ const batchSchema = new mongoose.Schema(
     },
     startDate: {
       type: Date,
-      default: Date.now, // Automatically set startDate to createdAt timestamp
+      default: Date.now, 
     },
     endDate: {
       type: Date,
@@ -24,10 +24,9 @@ const batchSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Pre-save hook to update endDate when status changes to 'end'
 batchSchema.pre("save", function(next) {
   if (this.status === "end" && !this.endDate) {
-    this.endDate = new Date(); // Set current date as endDate
+    this.endDate = new Date();
   }
   next();
 });

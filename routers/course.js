@@ -4,14 +4,14 @@ import CourseModel from "../models/AdCourse.js";
 const router = express.Router();
 
 router.post("/", async (req, res) => {
-  const { courseName, courseDescription, trainer, courseSection, courseBatch, courseImage } = req.body;
+  const { courseName, courseDescription, trainer, section, batch, courseImage } = req.body;
   try {    
     const newCourse = new CourseModel({
       courseName,
       courseDescription,
       trainer,
-      courseSection,
-      courseBatch,
+      section,
+      batch,
       courseImage,
     });
     await newCourse.save();
@@ -22,10 +22,28 @@ router.post("/", async (req, res) => {
   }
 });
 
+// router.get("/", async (req, res) => {
+//   try {
+//     const allcourses = await CourseModel.find()
+//     .populate('sections')
+//     .populate('batch')
+//     .populate('trainer');
+//     res.status(200).json({ message: "All Courses data", course : allcourses });
+//   } catch (error) {
+//     console.error("Error fetching batches:", error);
+//     res.status(500).json({ message: "Server error" });
+//   }
+// });
+
+// Example for populating Course data
 router.get("/", async (req, res) => {
   try {
-    const courses = await CourseModel.find();
-    res.status(200).json({ message: "Courses fetched successfully", courses });
+    const allCourses = await CourseModel.find()
+      .populate("section")
+      .populate('trainer', 'trainerName trainerEmail')  // Direct population for trainer
+      .populate('batch', 'batchNo startDate endDate status'); // Direct population for batch
+
+    res.status(200).json({ message: "All Courses data", course: allCourses });
   } catch (error) {
     console.error("Error fetching courses:", error);
     res.status(500).json({ message: "Server error" });

@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 const sectionSchema = new mongoose.Schema(
   {
-    sectionNo: {
+    sectionName: {
       type: String,
       required: true,
     },

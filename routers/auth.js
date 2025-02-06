@@ -66,12 +66,12 @@ router.get("/trainer", async (req, res) => {
 });
 
 router.post("/section", async (req, res) => {
-  const { sectionNo, sectionTiming , course ,trainer, batch, status  } = req.body;
+  const { sectionName, sectionTiming , course ,trainer, batch, status  } = req.body;
   try {
     const newSection = new SectionModel({
-      sectionNo,
+      sectionName,
       sectionTiming,
-      course ,
+      course,
       trainer,
       batch,
       status
@@ -88,10 +88,11 @@ router.post("/section", async (req, res) => {
 
 router.get("/section", async (req, res) => {
   try {
-    const allbatches = await BatchModel.find() .populate('course')
+    const allsections = await SectionModel.find()
+    .populate('course')
     .populate('batch')
-    .populate('trainer');;
-    res.status(200).json({ message: "All batch data", batch: allbatches });
+    .populate('trainer');
+    res.status(200).json({ message: "All sections data", section : allsections });
   } catch (error) {
     console.error("Error fetching batches:", error);
     res.status(500).json({ message: "Server error" });
