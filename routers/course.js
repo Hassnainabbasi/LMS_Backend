@@ -1,15 +1,16 @@
 import express from "express";
 import CourseModel from "../models/AdCourse.js";
+import verifyAdminToken from "../middleware/auth.js";
 
 const router = express.Router();
 
-router.post("/", async (req, res) => {
-  const { courseName, courseDescription, trainer, section, batch, courseImage } = req.body;
+router.post("/",verifyAdminToken, async (req, res) => {
+  const { courseName, courseDescription, teachers, section, batch, courseImage } = req.body;
   try {    
     const newCourse = new CourseModel({
       courseName,
       courseDescription,
-      trainer,
+      teachers,
       section,
       batch,
       courseImage,
@@ -21,26 +22,11 @@ router.post("/", async (req, res) => {
     res.status(500).json({ message: "Server error", error });
   }
 });
-
-// router.get("/", async (req, res) => {
-//   try {
-//     const allcourses = await CourseModel.find()
-//     .populate('sections')
-//     .populate('batch')
-//     .populate('trainer');
-//     res.status(200).json({ message: "All Courses data", course : allcourses });
-//   } catch (error) {
-//     console.error("Error fetching batches:", error);
-//     res.status(500).json({ message: "Server error" });
-//   }
-// });
-
-// Example for populating Course data
-router.get("/", async (req, res) => {
+router.get("/",verifyAdminToken, async (req, res) => {
   try {
     const allCourses = await CourseModel.find()
       .populate("section")
-      .populate('trainer', 'trainerName trainerEmail')  // Direct population for trainer
+      .populate('teachers', 'teachersName teachersEmail')  // Direct population for teachers
       .populate('batch', 'batchNo startDate endDate status'); // Direct population for batch
 
     res.status(200).json({ message: "All Courses data", course: allCourses });
@@ -64,13 +50,13 @@ router.get("/:id", async (req, res) => {
 });
 
 router.put("/:id", async (req, res) => {
-  const { courseName, courseDescription, trainer, courseSection, courseBatch } = req.body;
+  const { courseName, courseDescription, teachers, courseSection, courseBatch } = req.body;
 
   try {
     let courseImageUrl = req.body.courseImage; // Keep old image if not updated
     const updatedCourse = await CourseModel.findByIdAndUpdate(
       req.params.id,
-      { courseName, courseDescription, trainer, courseSection, courseBatch, courseImage: courseImageUrl },
+      { courseName, courseDescription, teachers, courseSection, courseBatch, courseImage: courseImageUrl },
       { new: true }
     );
 

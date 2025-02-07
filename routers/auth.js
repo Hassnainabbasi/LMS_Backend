@@ -1,230 +1,67 @@
 import express from "express";
 import UserModel from "../models/Users.js";
 import AdminModel from "../models/AdminModal.js";
-import userClear from "../models/OnlineUsers.js";
 import AnnouncementModel from "../models/Announcment.js";
 import CommentModel from "../models/Comments.js";
 import ReportsModel from "../models/Report.js";
-import TrainerModel from "../models/Trainer.js";
 import SectionModel from "../models/Section.js";
 import BatchModel from "../models/Batch.js";
+import TeachersModel from "../models/Teacher.js";
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+import verifyAdminToken from "../middleware/auth.js";
+
 
 const router = express.Router();
 
-router.post("/register", async (req, res) => {
-  const { name, cnic, phone, address, purpose, tokenNo } = req.body;
+router.post("/admins", async (req, res) => {
   try {
-    const existingUser = await UserModel.findOne({ cnic });
-    if (existingUser) {
-      return res.status(400).json({ message: "User with this CNIC already exists" });
-    }
-
-    const newUser = new UserModel({ name, cnic, phone, address, purpose, tokenNo });
+    const { email, password } = req.body;
+        
+    const hashpassword = await bcrypt.hash(password, 12);
+    console.log("hashpassword=>", hashpassword);
+    
+    const newUser = new AdminModel({ email, password : hashpassword });
     await newUser.save();
-
-    res.status(201).json({ message: "User registered successfully", user: newUser });
+    
+    return res.status(201).json({ message: "Admin created successfully" });
   } catch (error) {
-    console.error("Error registering user:", error);
-    res.status(500).json({ message: "Server error" });
+    return res.status(500).json({ message: "Something went wrong", error });
   }
 });
 
-router.post("/trainer", async (req, res) => {
-  const { trainerName, trainerEmail, trainerPhone, trainerBio } = req.body;
-  try {
-    const newTrainer = new TrainerModel({ trainerName, trainerEmail, trainerPhone, trainerBio });
-    await newTrainer.save();
-
-    res.status(201).json({ message: "Trainer registered successfully", trainer: newTrainer });
-  } catch (error) {
-    console.error("Error registering user:", error);
-    res.status(500).json({ message: "Server error" });
-  }
-});
-
-router.post("/trainer", async (req, res) => {
-  const { trainerName, trainerEmail, trainerPhone, trainerBio } = req.body;
-  try {
-    const newTrainer = new TrainerModel({ trainerName, trainerEmail, trainerPhone, trainerBio });
-    await newTrainer.save();
-
-    res.status(201).json({ message: "Trainer registered successfully", trainer: newTrainer });
-  } catch (error) {
-    console.error("Error registering user:", error);
-    res.status(500).json({ message: "Server error" });
-  }
-});
-
-router.get("/trainer", async (req, res) => {
-  try {
-    const alltrainers = await TrainerModel.find();
-    res.status(201).json({ message: "All Trainer Data", trainer: alltrainers });
-  } catch (error) {
-    console.error("Error registering user:", error);
-    res.status(500).json({ message: "Server error" });
-  }
-});
-
-router.post("/section", async (req, res) => {
-  const { sectionName, sectionTiming , course ,trainer, batch, status  } = req.body;
-  try {
-    const newSection = new SectionModel({
-      sectionName,
-      sectionTiming,
-      course,
-      trainer,
-      batch,
-      status
-    });
-
-    await newSection.save();
-
-    res.status(201).json({ message: "Section registered successfully", section: newSection });
-  } catch (error) {
-    console.error("Error registering section:", error);
-    res.status(500).json({ message: "Server error" });
-  }
-});
-
-router.get("/section", async (req, res) => {
-  try {
-    const allsections = await SectionModel.find()
-    .populate('course')
-    .populate('batch')
-    .populate('trainer');
-    res.status(200).json({ message: "All sections data", section : allsections });
-  } catch (error) {
-    console.error("Error fetching batches:", error);
-    res.status(500).json({ message: "Server error" });
-  }
-});
-
-router.post("/batch", async (req, res) => {
-  const { batchNo, status , course } = req.body;
-  try {
-    const newBatch = new BatchModel({ 
-      batchNo,
-      status,
-      course
-    });
-
-    if (status === 'end') {
-      newBatch.endDate = new Date();
-    }
-
-    await newBatch.save();
-
-    res.status(201).json({ message: "Batch registered successfully", batch: newBatch });
-  } catch (error) {
-    console.error("Error registering batch:", error);
-    res.status(500).json({ message: "Server error" });
-  }
-});
-
-router.get("/batch", async (req, res) => {
-  try {
-    const allBatches = await BatchModel.find().populate('course');
-    res.status(200).json({ message: "All batch data", batch: allBatches });
-  } catch (error) {
-    console.error("Error fetching batches:", error);
-    res.status(500).json({ message: "Server error" });
-  }
-});
-
-  
-router.get("/register", async (req, res) => {
-  try {
-    const allUsers = await UserModel.find(); // Fetch all users from the database
-    res.status(200).json({
-      message: "All Users Data",
-      users: allUsers,
-    });
-  } catch (error) {
-    console.error("Error fetching users:", error);
-    res.status(500).json({ message: "Server error" });
-  }
-});
-
-router.put("/register/:id", async (req, res) => {
-  const { id } = req.params; // Make sure this matches the URL path
-  const { name, cnic, phone, address, purpose, tokenNo } = req.body;
-
-  try {
-    const updatedUser = await UserModel.findByIdAndUpdate(
-      id,
-      { name, cnic, phone, address, purpose, tokenNo },
-      { new: true }
-    );
-    if (!updatedUser) {
-      return res.status(404).json({ message: "User not found" });
-    }
-    res.status(200).json({ message: "User updated successfully", user: updatedUser });
-  } catch (error) {
-    console.error("Error updating user:", error);
-    res.status(500).json({ message: "Server error" });
-  }
-});
-
-router.delete("/register/:id", async (req, res) => {
-  const { id } = req.params;
-
-  try {
-    const deletedUser = await UserModel.findByIdAndDelete(id);
-    if (!deletedUser) {
-      return res.status(404).json({ message: "User not found" });
-    }
-    res.status(200).json({ message: "User deleted successfully", user: deletedUser });
-  } catch (error) {
-    console.error("Error deleting user:", error);
-    res.status(500).json({ message: "Server error" });
-  }
-});
-
-router.post("/admins" ,async (req,res) =>{
-
-  const {email, password} = req.body
-  if (!email || !password ) {
-    return res.status(400).json({
-      success: false,
-      message: "All fields (userId, remarks, updateStatus) are required.",
-    });
+router.post("/login", async (req, res) => {
+  const { email, password } = req.body; // Extract email and password properly
+  if (!email || !password) {
+    return res.status(400).json({ error: true, msg: "Email and password are required" });
   }
 
   try {
-    // Ensure you await the result of the database query
     const admin = await AdminModel.findOne({ email });
-  
     if (!admin) {
-      return res.status(404).json({
-        success: false,
-        message: "Admin not found.",
-      });
+      return res.status(403).json({ error: true, msg: "Incorrect Email or Password" });
     }
-  
-    // Check if the provided password matches the one stored in the database
-    if (admin.password !== password) {
-      return res.status(400).json({
-        success: false,
-        message: "Incorrect password.",
-      });
+
+    const checkpassword = await bcrypt.compare(password, admin.password);
+    if (!checkpassword) {
+      return res.status(403).json({ error: true, msg: "Invalid Password" });
     }
-  
-    // If the email and password match
+
+    const token = jwt.sign({ id: admin._id, email: admin.email }, process.env.JWT_SECRET, { expiresIn: "1h" });
+
+
+   console.log(token)
+
     return res.status(200).json({
-      success: true,
-      message: "Admin login successful.",
-      data: admin,
+      error: false,
+      data: { admin: { email: admin.email }, token },
+      msg: "User logged in successfully",
     });
   } catch (error) {
-    console.error(error); // Log the error to the server console for debugging
-    return res.status(500).json({
-      success: false,
-      message: "Server error. Please try again later.",
-      data: null,
-    });
+    console.error("Error during login:", error);
+    return res.status(500).json({ error: true, msg: "Internal server error" });
   }
-  
-})
+});
 
 router.get("/admins", async (req, res) => {
   try {
@@ -239,58 +76,7 @@ router.get("/admins", async (req, res) => {
   }
 });
 
-router.post("/departmentStaff", async (req, res) => {
-  const { tokenNo } = req.body;
-
-  try {
-    if (!tokenNo) {
-      return res.status(400).json({ message: "Token number is required" });
-    }
-
-    const userData = await UserModel.findOne({ tokenNo });
-    if (!userData) {
-      return res.status(404).json({ message: "No user found with this token number" });
-    }
-
-    res.status(200).json({ message: "User data retrieved successfully", userData });
-  } catch (error) {
-    console.error("Error fetching user data:", error);
-    res.status(500).json({ message: "Server error" });
-  }
-});
-
-router.post("/userClear", async (req, res) => {
-  const { userId, remarks, updateStatus } = req.body;
-
-  if (!userId || !remarks || !updateStatus) {
-    return res.status(400).json({
-      success: false,
-      message: "All fields (userId, remarks, updateStatus) are required.",
-    });
-  }
-
-  try {
-    const newUserClear = new userClear({
-      userId,
-      remarks,
-      updateStatus,
-    });
-
-    const savedRecord = await newUserClear.save();
-
-    return res.status(201).json({
-      success: true,
-      message: "User clearance updated successfully.",
-      data: savedRecord,
-    });
-  } catch (error) {
-    console.error("Error saving user clearance:", error);
-    return res.status(500).json({
-      success: false,
-      message: "An error occurred while updating user clearance.",
-    });
-  }
-});
+export default router; 
 
 router.post("/announcment", async (req, res) => {
   const { title, summary, reason, } = req.body;
@@ -400,22 +186,159 @@ router.get("/report", async (req, res) => {
   }
 });
 
-
-router.get("/onlineUsers", async (req, res) => {
-  try {
-    const onlineUsers = await userClear.find(); // Fetch all users from the database
-    res.status(200).json({
-      message: "All Online Users Data",
-      onlineUsers: onlineUsers
+    
+    router.post("/register", async (req, res) => {
+      const { name, cnic, phone, address, purpose, tokenNo } = req.body;
+      try {
+        const existingUser = await UserModel.findOne({ cnic });
+        if (existingUser) {
+          return res.status(400).json({ message: "User with this CNIC already exists" });
+        }
+    
+        const newUser = new UserModel({ name, cnic, phone, address, purpose, tokenNo });
+        await newUser.save();
+    
+        res.status(201).json({ message: "User registered successfully", user: newUser });
+      } catch (error) {
+        console.error("Error registering user:", error);
+        res.status(500).json({ message: "Server error" });
+      }
     });
-  } catch (error) {
-    console.error("Error fetching users:", error);
-    res.status(500).json({ message: "Server error" });
-  }
-})
-
-
-
-
-
-export default router; 
+    
+    router.post("/teachers", async (req, res) => {
+      const { teachersName, teachersEmail, teachersPhone, teachersBio, teachersPassword } = req.body;
+      try {
+        const newteachers = new TeachersModel({ teachersName, teachersEmail, teachersPhone, teachersBio, teachersPassword });
+        await newteachers.save();
+    
+        res.status(201).json({ message: "teachers registered successfully", teachers: newteachers });
+      } catch (error) {
+        console.error("Error registering user:", error);
+        res.status(500).json({ message: "Server error" });
+      }
+    });
+    
+    router.get("/teachers", async (req, res) => {
+      try {
+        const allteacherss = await TeachersModel.find();
+        res.status(201).json({ message: "All teachers Data", teachers: allteacherss });
+      } catch (error) {
+        console.error("Error registering user:", error);
+        res.status(500).json({ message: "Server error" });
+      }
+    });
+    
+    router.post("/section", async (req, res) => {
+      const { sectionName, sectionTiming , course ,teachers, batch, status  } = req.body;
+      try {
+        const newSection = new SectionModel({
+          sectionName,
+          sectionTiming,
+          course,
+          teachers,
+          batch,
+          status
+        });
+    
+        await newSection.save();
+    
+        res.status(201).json({ message: "Section registered successfully", section: newSection });
+      } catch (error) {
+        console.error("Error registering section:", error);
+        res.status(500).json({ message: "Server error" });
+      }
+    });
+    
+    router.get("/section", async (req, res) => {
+      try {
+        const allsections = await SectionModel.find()
+        .populate('course')
+        .populate('batch')
+        .populate('teachers');
+        res.status(200).json({ message: "All sections data", section : allsections });
+      } catch (error) {
+        console.error("Error fetching batches:", error);
+        res.status(500).json({ message: "Server error" });
+      }
+    });
+    
+    router.post("/batch", async (req, res) => {
+      const { batchNo, status , course } = req.body;
+      try {
+        const newBatch = new BatchModel({ 
+          batchNo,
+          status,
+          course
+        });
+    
+        if (status === 'end') {
+          newBatch.endDate = new Date();
+        }
+    
+        await newBatch.save();
+    
+        res.status(201).json({ message: "Batch registered successfully", batch: newBatch });
+      } catch (error) {
+        console.error("Error registering batch:", error);
+        res.status(500).json({ message: "Server error" });
+      }
+    });
+    
+    router.get("/batch", async (req, res) => {
+      try {
+        const allBatches = await BatchModel.find().populate('course');
+        res.status(200).json({ message: "All batch data", batch: allBatches });
+      } catch (error) {
+        console.error("Error fetching batches:", error);
+        res.status(500).json({ message: "Server error" });
+      }
+    });
+    
+      
+    router.get("/register", async (req, res) => {
+      try {
+        const allUsers = await UserModel.find(); // Fetch all users from the database
+        res.status(200).json({
+          message: "All Users Data",
+          users: allUsers,
+        });
+      } catch (error) {
+        console.error("Error fetching users:", error);
+        res.status(500).json({ message: "Server error" });
+      }
+    });
+    
+    router.put("/register/:id", async (req, res) => {
+      const { id } = req.params; // Make sure this matches the URL path
+      const { name, cnic, phone, address, purpose, tokenNo } = req.body;
+    
+      try {
+        const updatedUser = await UserModel.findByIdAndUpdate(
+          id,
+          { name, cnic, phone, address, purpose, tokenNo },
+          { new: true }
+        );
+        if (!updatedUser) {
+          return res.status(404).json({ message: "User not found" });
+        }
+        res.status(200).json({ message: "User updated successfully", user: updatedUser });
+      } catch (error) {
+        console.error("Error updating user:", error);
+        res.status(500).json({ message: "Server error" });
+      }
+    });
+    
+    router.delete("/register/:id", async (req, res) => {
+      const { id } = req.params;
+    
+      try {
+        const deletedUser = await UserModel.findByIdAndDelete(id);
+        if (!deletedUser) {
+          return res.status(404).json({ message: "User not found" });
+        }
+        res.status(200).json({ message: "User deleted successfully", user: deletedUser });
+      } catch (error) {
+        console.error("Error deleting user:", error);
+        res.status(500).json({ message: "Server error" });
+      }
+    });

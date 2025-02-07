@@ -5,6 +5,7 @@ import mongoose from "mongoose";
 import "dotenv/config";
 import authRoutes from "./routers/auth.js";
 import courseRoutes from "./routers/course.js";
+import teachersRoutes from "./routers/teachersdata.js";
 
 const app = express();
 
@@ -13,6 +14,8 @@ app.use(express.json());
 app.use(morgan("dev"));
 app.use("/auth", authRoutes);
 app.use("/course", courseRoutes);
+app.use("/teachersdata", teachersRoutes);
+
 
 app.get('/',(req,res)=>{
   res.send('Course Route');
