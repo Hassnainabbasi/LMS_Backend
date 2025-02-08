@@ -8,9 +8,9 @@ const userSchema = new Schema(
     cnic: { type: String, unique: true, required: true }, // CNIC as a unique identifier
     phone: { type: String, required: true }, // Phone number
     address: { type: String, required: true }, // Address of the user
-    purpose: { 
-      type: String, 
-      required: true 
+    purpose: {
+      type: String,
+      required: true,
     },
     tokenNo: { type: Number, required: true },
   },
