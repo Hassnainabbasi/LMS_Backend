@@ -8,13 +8,12 @@ import SectionModel from "../models/Section.js";
 import BatchModel from "../models/Batch.js";
 import TeachersModel from "../models/Teacher.js";
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
-import verifyAdminToken from "../middleware/auth.js";
 
 const router = express.Router();
 
-// router.post("/adlogin", async (req, res) => {
+// router.post("/login", async (req, res) => {
 //   try {
+//     console.log(req.body)
 //     const { email, password } = req.body;
 
 //     const hashpassword = await bcrypt.hash(password, 12);
@@ -30,14 +29,14 @@ const router = express.Router();
 // });
 
 router.post("/login", async (req, res) => {
-  const { email, password } = req.body; // Extract email and password properly
-  // if (!email || !password) {
-  //   return res
-  //     .status(400)
-  //     .json({ error: true, msg: "Email and password are required" });
-  // }
+  const { email, password } = req.body;
+    console.log(req.body,"body")
+
+  if (!email || !password) {
+    return res.status(500).json({ error: true, msg: "Email and password are required" });
+  }
   try {
-    const admin = await AdminModel.findOne({email});
+    const admin = await AdminModel.findOne({ email });
     if (!admin) {
       return res
         .status(403)
@@ -52,7 +51,7 @@ router.post("/login", async (req, res) => {
     return res.status(200).json({
       error: false,
       data: { admin: { email: admin.email }},
-      msg: "User logged in successfully",
+      msg: "Admin logged in successfully",
     });
   } catch (error) {
     console.error("Error during login:", error);
@@ -60,47 +59,20 @@ router.post("/login", async (req, res) => {
   }
 });
 
-// router.post("/adlogin", async (req, res) => {
-//   const { email, password } = req.body;
+router.get("/admins", async (req, res) => {
+  try {
+    const alladmin = await AdminModel.find(); // Fetch all users from the database
+    res.status(200).json({
+      message: "All Users Data",
+      users: alladmin,
+    });
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
 
-//   try {
-//     const Admin = await AdminModel.findOne({email});
-
-//     if (!Admin) {
-//       return res.status(404).json({ message: "Invalid email" });
-//     }
-
-//     const checkpassword = await bcrypt.compare(password, Admin.password )
-
-//     if (!checkpassword) {
-//             return res.status(403).json({ error: true, msg: "Invalid Password" });
-//           }
-//     console.log("Admin ==> ", Admin);
-
-//     res.status(200).json({
-//       error : false,
-//       data : Admin,
-//       msg: "Admin logged in successfully",
-//     });
-
-//   } catch (error) {
-//     console.error("Error logging in Admin:", error);
-//     res.status(500).json({ message: "Server error", error });
-//   }
-// });
-
-// router.get("/admins", verifyAdminToken, async (req, res) => {
-//   try {
-//     const alladmin = await AdminModel.find(); // Fetch all users from the database
-//     res.status(200).json({
-//       message: "All Users Data",
-//       users: alladmin,
-//     });
-//   } catch (error) {
-//     console.error("Error fetching users:", error);
-//     res.status(500).json({ message: "Server error" });
-//   }
-// });
+export default router;
 
 router.post("/announcment", async (req, res) => {
   const { title, summary, reason } = req.body;
@@ -407,6 +379,4 @@ router.delete("/register/:id", async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 });
-
-export default router;
 
