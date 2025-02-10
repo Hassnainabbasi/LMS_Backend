@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import SectionModel from "../models/Section.js";
+import TeachersModel from "../models/Teacher.js";
 
 const verifyToken = async (req, res, next) => {
   try {
@@ -18,7 +18,7 @@ const verifyToken = async (req, res, next) => {
     }
 
     if (decoded) {
-      const user = await SectionModel.findById(decoded.id).lean();
+      const user = await TeachersModel.findById(decoded.id).lean();
       if (!user) {
         return res.status(404).json({ message: "No section user found!" });
       }

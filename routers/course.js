@@ -1,10 +1,9 @@
 import express from "express";
 import CourseModel from "../models/AdCourse.js";
-import verifyAdminToken from "../middleware/auth.js";
 
 const router = express.Router();
 
-router.post("/",verifyAdminToken, async (req, res) => {
+router.post("/", async (req, res) => {
   const { courseName, courseDescription, teachers, section, batch, courseImage } = req.body;
   try {    
     const newCourse = new CourseModel({
@@ -22,7 +21,7 @@ router.post("/",verifyAdminToken, async (req, res) => {
     res.status(500).json({ message: "Server error", error });
   }
 });
-router.get("/",verifyAdminToken, async (req, res) => {
+router.get("/", async (req, res) => {
   try {
     const allCourses = await CourseModel.find()
       .populate("section")

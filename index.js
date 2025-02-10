@@ -6,7 +6,7 @@ import "dotenv/config";
 import booksRoutes from "./routers/book.js";
 import authRoutes from "./routers/auth.js";
 import courseRoutes from "./routers/course.js";
-import sectionRoutes from "./routers/section.js";
+import tokenteacherRoutes from './routers/teacher.js'
 import teachersRoutes from "./routers/teachersdata.js";
 
 const app = express();
@@ -17,7 +17,7 @@ app.use(morgan("dev"));
 app.use("/auth", authRoutes);
 app.use("/course", courseRoutes);
 app.use("/books", booksRoutes);
-app.use("/sections", sectionRoutes);
+app.use("/tokenteacher", tokenteacherRoutes);
 app.use("/teachersdata", teachersRoutes);
 
 app.get("/", (req, res) => {

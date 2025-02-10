@@ -2,24 +2,28 @@ import mongoose from "mongoose";
 
 const teachersSchema = new mongoose.Schema(
   {
-    teachersName: {
+    teacherName: {
       type: String,
       required: true,
     },
-    teachersEmail: {
+    teacherEmail: {
       type: String,
       required: true,
-      unique: true, // Ensure unique email addresses
+      // unique: true, 
     },
-    teachersPhone: {
-      type: String,
-      required: true,
-    },
-    teachersPassword: {
+    teacherPhone: {
       type: String,
       required: true,
     },
-    teachersBio: {
+    teacherPassword: {
+      type: String,
+      required: true,
+    },
+    teacherBio: {
+      type: String,
+      required: true,
+    },
+    teacherImage: {
       type: String,
       required: true,
     },

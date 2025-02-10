@@ -13,36 +13,35 @@ import verifyAdminToken from "../middleware/auth.js";
 
 const router = express.Router();
 
-router.post("/admins", async (req, res) => {
-  try {
-    const { email, password } = req.body;
+// router.post("/adlogin", async (req, res) => {
+//   try {
+//     const { email, password } = req.body;
 
-    const hashpassword = await bcrypt.hash(password, 12);
-    console.log("hashpassword=>", hashpassword);
+//     const hashpassword = await bcrypt.hash(password, 12);
+//     console.log("hashpassword=>", hashpassword);
 
-    const newUser = new AdminModel({ email, password: hashpassword });
-    await newUser.save();
+//     const newUser = new AdminModel({ email, password: hashpassword });
+//     await newUser.save();
 
-    return res.status(201).json({ message: "Admin created successfully" });
-  } catch (error) {
-    return res.status(500).json({ message: "Something went wrong", error });
-  }
-});
+//     return res.status(201).json({ message: "Admin created successfully" });
+//   } catch (error) {
+//     return res.status(500).json({ message: "Something went wrong", error });
+//   }
+// });
 
 router.post("/login", async (req, res) => {
   const { email, password } = req.body; // Extract email and password properly
-  if (!email || !password) {
-    return res
-      .status(400)
-      .json({ error: true, msg: "Email and password are required" });
-  }
-
+  // if (!email || !password) {
+  //   return res
+  //     .status(400)
+  //     .json({ error: true, msg: "Email and password are required" });
+  // }
   try {
-    const admin = await AdminModel.findOne({ email });
+    const admin = await AdminModel.findOne({email});
     if (!admin) {
       return res
         .status(403)
-        .json({ error: true, msg: "Incorrect Email or Password" });
+        .json({ error: true, msg: "Incorrect Email" });
     }
 
     const checkpassword = await bcrypt.compare(password, admin.password);
@@ -50,17 +49,9 @@ router.post("/login", async (req, res) => {
       return res.status(403).json({ error: true, msg: "Invalid Password" });
     }
 
-    const token = jwt.sign(
-      { id: admin._id, email: admin.email },
-      process.env.JWT_SECRET,
-      { expiresIn: "1h" }
-    );
-
-    console.log(token);
-
     return res.status(200).json({
       error: false,
-      data: { admin: { email: admin.email }, token },
+      data: { admin: { email: admin.email }},
       msg: "User logged in successfully",
     });
   } catch (error) {
@@ -69,20 +60,47 @@ router.post("/login", async (req, res) => {
   }
 });
 
-router.get("/admins", verifyAdminToken, async (req, res) => {
-  try {
-    const alladmin = await AdminModel.find(); // Fetch all users from the database
-    res.status(200).json({
-      message: "All Users Data",
-      users: alladmin,
-    });
-  } catch (error) {
-    console.error("Error fetching users:", error);
-    res.status(500).json({ message: "Server error" });
-  }
-});
+// router.post("/adlogin", async (req, res) => {
+//   const { email, password } = req.body;
 
-export default router;
+//   try {
+//     const Admin = await AdminModel.findOne({email});
+
+//     if (!Admin) {
+//       return res.status(404).json({ message: "Invalid email" });
+//     }
+
+//     const checkpassword = await bcrypt.compare(password, Admin.password )
+
+//     if (!checkpassword) {
+//             return res.status(403).json({ error: true, msg: "Invalid Password" });
+//           }
+//     console.log("Admin ==> ", Admin);
+
+//     res.status(200).json({
+//       error : false,
+//       data : Admin,
+//       msg: "Admin logged in successfully",
+//     });
+
+//   } catch (error) {
+//     console.error("Error logging in Admin:", error);
+//     res.status(500).json({ message: "Server error", error });
+//   }
+// });
+
+// router.get("/admins", verifyAdminToken, async (req, res) => {
+//   try {
+//     const alladmin = await AdminModel.find(); // Fetch all users from the database
+//     res.status(200).json({
+//       message: "All Users Data",
+//       users: alladmin,
+//     });
+//   } catch (error) {
+//     console.error("Error fetching users:", error);
+//     res.status(500).json({ message: "Server error" });
+//   }
+// });
 
 router.post("/announcment", async (req, res) => {
   const { title, summary, reason } = req.body;
@@ -226,20 +244,15 @@ router.post("/register", async (req, res) => {
 });
 
 router.post("/teachers", async (req, res) => {
-  const {
-    teachersName,
-    teachersEmail,
-    teachersPhone,
-    teachersBio,
-    teachersPassword,
-  } = req.body;
+  const {teacherName, teacherEmail, teacherPhone, teacherBio, teacherPassword, teacherImage} = req.body;
   try {
     const newteachers = new TeachersModel({
-      teachersName,
-      teachersEmail,
-      teachersPhone,
-      teachersBio,
-      teachersPassword,
+      teacherName,
+      teacherEmail,
+      teacherPhone,
+      teacherBio,
+      teacherPassword,
+      teacherImage
     });
     await newteachers.save();
 
@@ -394,3 +407,6 @@ router.delete("/register/:id", async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 });
+
+export default router;
+
